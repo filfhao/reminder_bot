@@ -1,7 +1,7 @@
 from telegram.ext import Application, CommandHandler, MessageHandler, filters
 from config import TOKEN
 from handlers import start_command, help_command, handle_message, error
-
+from db_connection import conn
 
 if __name__ == '__main__':
     print('Starting bot...')
@@ -22,3 +22,4 @@ if __name__ == '__main__':
     #Polling
     print('Polling...')
     app.run_polling(poll_interval=1)
+
