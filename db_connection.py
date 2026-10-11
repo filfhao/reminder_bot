@@ -1,3 +1,5 @@
+from telegram import Update
+
 import psycopg
 from dotenv import load_dotenv
 import os
@@ -23,31 +25,39 @@ cur = conn.cursor()
 #     cur.execute("SELECT * FROM events")
 #     return cur.fetchall()
 
-def select():
-    cur.execute("SELECT * FROM events")
-    result = cur.fetchall()
-    for i in result:
-        print("Event id:", i[0])
-        print("Title:", i[2])
-        print("Description:", i[3])
-        print("Start time::", i[4])
-        print("Remind before:", i[5])
-        print("Is recurring:", i[6])
+def select(user_tg_id):
+    cur.execute("SELECT * FROM events WHERE user_id = %s", (user_tg_id,))
+    list = cur.fetchall()
+    if not list:
+        result = "You have no events yet"
+    else:
+        result = ""
+        for i in list:
+            result += f"Event id: {i[0]}\n"
+            result += f"Title: {i[2]}\n"
+            result += f"Description: {i[3]}\n"
+            result += f"Start time: {i[4]}\n"
+            result += f"Remind before: {i[5]}\n"
+            result += f"Is recurring: {i[6]}\n"
 
-        print("-"*20)
+            result += "-"*20 + "\n"
+    return result
 
 
 
-def add_event(user_id, title, start_time):
-    cur.execute("INSERT INTO events(user_id, title, start_time) VALUES (%s,%s,%s)", (user_id, title, start_time))
+def add_event(user_id, title, start_time, description = None, end_time=None, remind_before=None,
+              is_recurring=False, recurrence=None):
+    cur.execute("INSERT INTO events(user_id, title, start_time, description, end_time, remind_before,"
+              "is_recurring, recurrence) "
+                "VALUES (%s,%s,%s,%s,%s,%s,%s,%s)",
+                (user_id, title, start_time,description, end_time, remind_before,is_recurring, recurrence))
     conn.commit()
 
 def delete_event(id):
     cur.execute("DELETE FROM events WHERE id = %s", (id,))
     conn.commit()
 
-def edit_event():
-    print(select())
+def edit_event(parameter_to_edit):
     event_id = input("What event you like to edit?")
     parameter_to_edit = input("What parameter would you like to edit?")
     new_parameter = input("Enter new value:")
@@ -65,5 +75,5 @@ def edit_event():
 start_time = datetime(2026,9,21,17,30)
 
 #edit_event()
-select()
-cur.close()
+#print(select())
+#cur.close()
