@@ -2,8 +2,8 @@ from telegram import Update
 from config import BOT_USERNAME
 from telegram.ext import ContextTypes
 from responses import handle_response
-from db_connection import select, add_event,edit_event,delete_event
-from keyboard import main_keyboard, get_events_text, get_uni_schedule_text, get_contact_text, inline_keyboard, recurrence_keyboard,remind_keyboard
+from db_connection import select, add_event,edit_event,delete_event,event_exists
+from keyboard import main_keyboard, get_events_text, get_uni_schedule_text, get_contact_text, inline_keyboard, recurrence_keyboard, remind_keyboard, edit_keyboard
 from datetime import datetime, date, timedelta
 from zoneinfo import ZoneInfo
 
@@ -53,16 +53,22 @@ def parse_end_time(text, start_time):
 #Responses
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message_type: str = update.message.chat.type
+    user_tg_id = update.effective_user.id
     text: str = update.message.text
     print(f'User ({update.message.chat.id}) in {message_type}: "{text}"')
+
     if context.user_data.get("step") == "title":
-        title = text
+        if event_exists(user_tg_id,text):
+            await update.message.reply_text("An event with the same title already exists. Enter a new title")
+            return
+        else:
+            title = text
 
-        context.user_data["title"] = title
-        context.user_data["step"] = "description"
+            context.user_data["title"] = title
+            context.user_data["step"] = "description"
 
-        await update.message.reply_text("Enter the description: \n If there is no description enter \"-\"")
-        return
+            await update.message.reply_text("Enter the description: \n If there is no description enter \"-\"")
+            return
 
     if context.user_data.get("step") == "description":
         if text == "-":
@@ -181,6 +187,7 @@ async def handle_button_click(update: Update, context: ContextTypes.DEFAULT_TYPE
         context.user_data["step"] = "title"
         await query.edit_message_text("Enter the event title:")
     elif query.data == "edit_event":
+        await update.message.reply_text("Choose a parameter you want to edit", reply_markup=edit_keyboard)
         await query.edit_message_text("You choosed an edit event button")
     elif query.data == "delete_event":
         await query.edit_message_text("You choosed an delete event button")

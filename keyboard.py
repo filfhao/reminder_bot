@@ -42,3 +42,21 @@ remind_keyboard = InlineKeyboardMarkup([
         InlineKeyboardButton("1 hour", callback_data="remind_60")
     ]
 ])
+
+
+edit_keyboard = InlineKeyboardMarkup([
+    [
+        InlineKeyboardButton("Title", callback_data="edit_title"),
+        InlineKeyboardButton("Description", callback_data="edit_description")
+    ],
+    [
+        InlineKeyboardButton("Start time", callback_data="edit_start_time"),
+        InlineKeyboardButton("End time", callback_data="edit_end_time")
+    ],
+    [
+        InlineKeyboardButton("Recurrence", callback_data="edit_recurrence"),
+        InlineKeyboardButton("Reminder", callback_data="edit_remind")
+    ]
+])
+
+

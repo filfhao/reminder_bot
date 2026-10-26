@@ -43,7 +43,9 @@ def select(user_tg_id):
             result += "-"*20 + "\n"
     return result
 
-
+def event_exists(user_id, title):
+    cur.execute("SELECT 1 FROM events WHERE user_id = %s AND title = %s",(user_id,title,))
+    return cur.fetchone() is not None
 
 def add_event(user_id, title, start_time, description = None, end_time=None, remind_before=None,
               is_recurring=False, recurrence=None):
