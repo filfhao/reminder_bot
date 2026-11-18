@@ -43,9 +43,27 @@ def select(user_tg_id):
             result += "-"*20 + "\n"
     return result
 
-def event_exists(user_id, title):
-    cur.execute("SELECT 1 FROM events WHERE user_id = %s AND title = %s",(user_id,title,))
+def event_exists(user_id, title, exlude_event_id = None):
+    cur.execute("SELECT 1 FROM events WHERE user_id = %s AND title = %s AND id IS DISTINCT FROM %s",(user_id,title, exlude_event_id,))
     return cur.fetchone() is not None
+
+def get_event(user_tg_id, event_id):
+    cur.execute("SELECT * FROM events WHERE user_id = %s and id =%s", (user_tg_id,event_id,))
+    event = cur.fetchone()
+    if event is None:
+        return None
+
+    result = ""
+
+    result += f"Event id: {event[0]}\n"
+    result += f"Title: {event[2]}\n"
+    result += f"Description: {event[3]}\n"
+    result += f"Start time: {event[4]}\n"
+    result += f"Remind before: {event[5]}\n"
+    result += f"Is recurring: {event[6]}\n"
+
+    return result
+
 
 def add_event(user_id, title, start_time, description = None, end_time=None, remind_before=None,
               is_recurring=False, recurrence=None):
@@ -59,20 +77,12 @@ def delete_event(id):
     cur.execute("DELETE FROM events WHERE id = %s", (id,))
     conn.commit()
 
-def edit_event(parameter_to_edit):
-    event_id = input("What event you like to edit?")
-    parameter_to_edit = input("What parameter would you like to edit?")
-    new_parameter = input("Enter new value:")
-    match(parameter_to_edit):
-        case "title": cur.execute("UPDATE events SET title =%s WHERE id = %s", (new_parameter, event_id,))
-        case "description": cur.execute("UPDATE events SET description =%s WHERE id = %s", (new_parameter, event_id,))
-        case "start_time": cur.execute("UPDATE events SET start_time =%s WHERE id = %s", (new_parameter, event_id,))
-        case "remind_before": cur.execute("UPDATE events SET remind_before =%s WHERE id = %s", (new_parameter, event_id,))
-        case "is_recurring": cur.execute("UPDATE events SET is_recurring =%s WHERE id = %s", (new_parameter, event_id,))
-        case _: return("Unknown parameter")
+def edit_event(user_id, event_id, parameter_to_edit, new_value):
+    allowed_parameters = {"title", "description", "start_time", "end_time", "remind_before", "is_recurring"}
+    if parameter_to_edit not in allowed_parameters:
+        return False
+    cur.execute(f"UPDATE events SET {parameter_to_edit} =%s WHERE user_id = %s AND id = %s", (new_value, user_id, event_id,))
     conn.commit()
-    return "Event updated successfully"
-
 
 start_time = datetime(2026,9,21,17,30)
 

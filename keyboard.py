@@ -59,4 +59,9 @@ edit_keyboard = InlineKeyboardMarkup([
     ]
 ])
 
-
+confirm_keyboard = InlineKeyboardMarkup([
+    [
+        InlineKeyboardButton("✅ Confirm", callback_data = "confirm_changes"),
+        InlineKeyboardButton("❌ Cancel", callback_data="cancel_changes")
+    ]
+])
